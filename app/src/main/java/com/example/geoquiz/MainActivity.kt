@@ -38,24 +38,51 @@ class MainActivity : ComponentActivity() {
 fun GeoQuizScreen() {
     var currentIndex by remember { mutableStateOf(0) }
     var isAnswered by remember { mutableStateOf(false) }
-    var correctAnswers by remember { mutableStateOf(0) }
     var showResult by remember { mutableStateOf(false) }
 
+    // Ответы пользователя по каждому вопросу: null — не отвечено
+    val userAnswers = remember {
+        mutableStateListOf<Boolean?>().apply {
+            repeat(questions.size) { add(null) }
+        }
+    }
+
     val question = questions[currentIndex]
+    val isFirstQuestion = currentIndex == 0
     val isLastQuestion = currentIndex == questions.lastIndex
+
+    // Счётчик пересчитывается автоматически из userAnswers
+    val correctAnswers = userAnswers.indices.count { i ->
+        userAnswers[i] != null && userAnswers[i] == questions[i].answer
+    }
 
     fun answer(userAnswer: Boolean) {
         if (isAnswered) return
         isAnswered = true
-        if (userAnswer == question.answer) correctAnswers++
+        userAnswers[currentIndex] = userAnswer
         if (isLastQuestion) showResult = true
+    }
+
+    fun goBack() {
+        if (isFirstQuestion) return
+        currentIndex--
+        // Сбрасываем ответ на предыдущий вопрос, чтобы можно было переответить
+        userAnswers[currentIndex] = null
+        isAnswered = false
+    }
+
+    fun goNext() {
+        if (currentIndex < questions.lastIndex) {
+            currentIndex++
+            isAnswered = false
+        }
     }
 
     fun restart() {
         currentIndex = 0
         isAnswered = false
-        correctAnswers = 0
         showResult = false
+        for (i in userAnswers.indices) userAnswers[i] = null
     }
 
     Column(
@@ -69,6 +96,7 @@ fun GeoQuizScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Как было: после ответа True/False скрываются
         if (!isAnswered) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Button(onClick = { answer(true) }) { Text("True") }
@@ -80,16 +108,20 @@ fun GeoQuizScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        if (!(isLastQuestion && isAnswered)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            // Новая кнопка Back — недоступна на первом вопросе
             Button(
-                onClick = {
-                    if (currentIndex < questions.lastIndex) {
-                        currentIndex++
-                        isAnswered = false
-                    }
-                }
+                onClick = { goBack() },
+                enabled = !isFirstQuestion
             ) {
-                Text("Next")
+                Text("Back")
+            }
+
+            // Как было: Next скрывается, когда ответили на последний вопрос
+            if (!(isLastQuestion && isAnswered)) {
+                Button(onClick = { goNext() }) {
+                    Text("Next")
+                }
             }
         }
 
