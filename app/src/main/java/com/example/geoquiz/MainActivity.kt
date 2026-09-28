@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GeoQuizScreen() {
     var currentIndex by remember { mutableStateOf(0) }
+    var isAnswered by remember { mutableStateOf(false) }
     val question = questions[currentIndex]
 
     Column(
@@ -50,16 +51,23 @@ fun GeoQuizScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Button(onClick = { }) { Text("True") }
-            Button(onClick = { }) { Text("False") }
+        if (!isAnswered) {
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Button(onClick = { isAnswered = true }) { Text("True") }
+                Button(onClick = { isAnswered = true }) { Text("False") }
+            }
+        } else {
+            Spacer(modifier = Modifier.height(48.dp))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = {
-                if (currentIndex < questions.lastIndex) currentIndex++
+                if (currentIndex < questions.lastIndex) {
+                    currentIndex++
+                    isAnswered = false
+                }
             }
         ) {
             Text("Next")
