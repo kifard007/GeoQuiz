@@ -38,8 +38,25 @@ class MainActivity : ComponentActivity() {
 fun GeoQuizScreen() {
     var currentIndex by remember { mutableStateOf(0) }
     var isAnswered by remember { mutableStateOf(false) }
+    var correctAnswers by remember { mutableStateOf(0) }
+    var showResult by remember { mutableStateOf(false) }
+
     val question = questions[currentIndex]
     val isLastQuestion = currentIndex == questions.lastIndex
+
+    fun answer(userAnswer: Boolean) {
+        if (isAnswered) return
+        isAnswered = true
+        if (userAnswer == question.answer) correctAnswers++
+        if (isLastQuestion) showResult = true
+    }
+
+    fun restart() {
+        currentIndex = 0
+        isAnswered = false
+        correctAnswers = 0
+        showResult = false
+    }
 
     Column(
         modifier = Modifier
@@ -54,15 +71,14 @@ fun GeoQuizScreen() {
 
         if (!isAnswered) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Button(onClick = { isAnswered = true }) { Text("True") }
-                Button(onClick = { isAnswered = true }) { Text("False") }
+                Button(onClick = { answer(true) }) { Text("True") }
+                Button(onClick = { answer(false) }) { Text("False") }
             }
         } else {
             Spacer(modifier = Modifier.height(48.dp))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
 
         if (!(isLastQuestion && isAnswered)) {
             Button(
@@ -80,6 +96,22 @@ fun GeoQuizScreen() {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text("Question ${currentIndex + 1} of ${questions.size}", fontSize = 16.sp)
+
+    }
+
+    if (showResult) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = { Text("Quiz finished") },
+            text = {
+                Text("Correct answers: $correctAnswers of ${questions.size}")
+            },
+            confirmButton = {
+                TextButton(onClick = { restart() }) {
+                    Text("Restart")
+                }
+            }
+        )
     }
 }
 
