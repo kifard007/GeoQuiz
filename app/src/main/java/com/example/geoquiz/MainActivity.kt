@@ -39,6 +39,7 @@ fun GeoQuizScreen() {
     var currentIndex by remember { mutableStateOf(0) }
     var isAnswered by remember { mutableStateOf(false) }
     val question = questions[currentIndex]
+    val isLastQuestion = currentIndex == questions.lastIndex
 
     Column(
         modifier = Modifier
@@ -62,15 +63,18 @@ fun GeoQuizScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
-            onClick = {
-                if (currentIndex < questions.lastIndex) {
-                    currentIndex++
-                    isAnswered = false
+
+        if (!(isLastQuestion && isAnswered)) {
+            Button(
+                onClick = {
+                    if (currentIndex < questions.lastIndex) {
+                        currentIndex++
+                        isAnswered = false
+                    }
                 }
+            ) {
+                Text("Next")
             }
-        ) {
-            Text("Next")
         }
 
         Spacer(modifier = Modifier.height(24.dp))
